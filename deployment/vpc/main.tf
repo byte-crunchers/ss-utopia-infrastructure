@@ -75,13 +75,13 @@ module "loadbalancing" {
   listener_protocol      = "HTTP"
 }
 
-module "compute" {
-  source = "../../modules/compute"
-  instance_count = 1
-  instance_type = "t2.micro"
-  public_sg = module.networking.public_security_group
-  public_subnets = module.networking.public_subnets
-  vol_size = 10
-  key_name = "utopiakey"
-  public_key_path = "/Users/iainrobertson/.ssh/keyutopia.pub"
-}
+# module "compute" {
+#   source = "../../modules/compute"
+#   instance_count = 1
+#   instance_type = "t2.micro"
+#   public_sg = module.networking.public_security_group
+#   public_subnets = module.networking.public_subnets
+#   vol_size = 10
+#   key_name = "utopiakey"
+#   public_key_path = "/Users/iainrobertson/.ssh/keyutopia.pub"
+# }
