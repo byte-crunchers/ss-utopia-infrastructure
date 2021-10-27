@@ -41,6 +41,14 @@ pipeline {
                 
             }
         }
+        stage('Terraform Plan') {
+            steps {
+               
+                     sh 'terraform plan'
+                
+            }
+        }
+
         stage('Terraform Apply') {
             steps {
                

@@ -20,7 +20,7 @@ resource "aws_security_group" "terra_utopia_bastion_sg" {
 # CREATE BASTION HOST IN us-east-1A PUBLIC SUBNET
 
 # resource "aws_instance" "terra_utopia_bastion_host-1a" {
-#   ami = "ami-0b4b2d87bdd32212a"
+#   ami = ""
 #   instance_type = "t2.micro"
 #   key_name = aws_key_pair.ssh-key.key_name
 #   associate_public_ip_address = true
@@ -35,7 +35,7 @@ resource "aws_security_group" "terra_utopia_bastion_sg" {
 # CREATE BASTION HOST IN us-east-1B PUBLIC SUBNET
 
 # resource "aws_instance" "terra_utopia_bastion_host-1b" {
-#   ami = "ami-0b4b2d87bdd32212a"
+#   ami = ""
 #   instance_type = "t2.micro"
 #   key_name = aws_key_pair.ssh-key.key_name
 #   associate_public_ip_address = true
