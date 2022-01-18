@@ -1,0 +1,53 @@
+Resources:
+  ListenerLoan:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: 
+      - TargetGroupLoan
+    Properties: 
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupLoan
+      LoadBalancerArn: arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
+      Port: 8084
+      Protocol: HTTP
+  TargetGroupLoan:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Port: 8084
+      Protocol: HTTPS
+      VpcId: vpc-0e0392f1c54c7bdb2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Name: loan-dev
+      ProtocolVersion: HTTP1
+      TargetType: ip
+  ServiceLoan:
+    Type: AWS::ECS::Service
+    DependsOn: 
+      - ListenerLoan
+    Properties: 
+      Cluster: arn:aws:ecs:us-east-1:422288715120:cluster/ss-microservice-cluster
+      DesiredCount: 2
+      HealthCheckGracePeriodSeconds: 120
+      LaunchType: FARGATE
+      LoadBalancers: 
+        - TargetGroupArn:
+            Ref: TargetGroupLoan
+          ContainerPort: 8084
+          ContainerName: ss-utopia-loan
+        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
+      NetworkConfiguration: 
+        AwsvpcConfiguration: 
+          AssignPublicIp: ENABLED
+          SecurityGroups: 
+            - sg-0ec3141c0c23d98e8
+          Subnets: 
+            -  subnet-00c9e1c0b4da033f6
+            -  subnet-0028f7b0fdde23b65
+      ServiceName: ServiceLoan
+      TaskDefinition: ss-utopia-loan:1
+  

@@ -1,0 +1,278 @@
+Resources:
+
+  ECSCluster:  
+    Type: AWS::ECS::Cluster
+    Properties: 
+      CapacityProviders: 
+        - FARGATE
+      ClusterName: ss-microservice-cluster
+      DefaultCapacityProviderStrategy: 
+        - CapacityProvider: FARGATE
+          Weight: 1
+      
+
+
+
+  ListenerAccount:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: 
+      - TargetGroupAcct
+      - LoadBlancer
+    Properties: 
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupAcct
+      LoadBalancerArn: !Ref LoadBlancer
+      Port: 8088
+      Protocol: HTTPS
+      Certificates:
+        - arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+  TargetGroupAcct:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Port: 8088
+      Protocol: HTTPS
+      VpcId: vpc-0e0392f1c54c7bdb2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Name: acct-dev
+      ProtocolVersion: HTTP1
+      TargetType: ip
+  ServiceAcct:
+    Type: AWS::ECS::Service
+    DependsOn: 
+      - ListenerAccount
+      - LoadBlancer
+      - ECSCluster
+    Properties: 
+      Cluster: !Ref ECSCluster
+      DesiredCount: 2
+      HealthCheckGracePeriodSeconds: 120
+      LaunchType: FARGATE
+      LoadBalancers: 
+        - TargetGroupArn:
+            Ref: TargetGroupAcct
+          ContainerPort: 8088
+          ContainerName: ss-utopia-account
+        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
+      NetworkConfiguration: 
+        AwsvpcConfiguration: 
+          AssignPublicIp: ENABLED
+          SecurityGroups: 
+            - sg-0ec3141c0c23d98e8
+          Subnets: 
+            -  subnet-00c9e1c0b4da033f6
+            -  subnet-0028f7b0fdde23b65
+      ServiceName: ServiceAcct
+      TaskDefinition: ss-utopia-account:5
+
+
+  ListenerLoan:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: 
+      - TargetGroupLoan
+      - LoadBlancer
+    Properties: 
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupLoan
+      LoadBalancerArn: !Ref LoadBlancer
+      Port: 8084
+      Protocol: HTTPS
+      Certificates:
+        - arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+  TargetGroupLoan:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Port: 8084
+      Protocol: HTTPS
+      VpcId: vpc-0e0392f1c54c7bdb2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Name: loan-dev
+      ProtocolVersion: HTTP1
+      TargetType: ip
+  ServiceLoan:
+    Type: AWS::ECS::Service
+    DependsOn: 
+      - ListenerLoan
+      - LoadBlancer
+      - ECSCluster
+    Properties: 
+      Cluster: !Ref ECSCluster
+      DesiredCount: 2
+      HealthCheckGracePeriodSeconds: 120
+      LaunchType: FARGATE
+      LoadBalancers: 
+        - TargetGroupArn:
+            Ref: TargetGroupLoan
+          ContainerPort: 8084
+          ContainerName: ss-utopia-loan
+        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
+      NetworkConfiguration: 
+        AwsvpcConfiguration: 
+          AssignPublicIp: ENABLED
+          SecurityGroups: 
+            - sg-0ec3141c0c23d98e8
+          Subnets: 
+            -  subnet-00c9e1c0b4da033f6
+            -  subnet-0028f7b0fdde23b65
+      ServiceName: ServiceLoan
+      TaskDefinition: ss-utopia-loan:1
+
+
+
+  ListenerUser:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: 
+      - TargetGroupUser
+      - LoadBlancer
+    Properties: 
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupUser
+      LoadBalancerArn: !Ref LoadBlancer
+      Port: 8089
+      Protocol: HTTPS
+      Certificates:
+        - arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+  TargetGroupUser:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Port: 8089
+      Protocol: HTTPS
+      VpcId: vpc-0e0392f1c54c7bdb2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Name: User-dev
+      ProtocolVersion: HTTP1
+      TargetType: ip
+  ServiceUser:
+    Type: AWS::ECS::Service
+    DependsOn: 
+      - ListenerUser
+      - LoadBlancer
+      - ECSCluster
+    Properties: 
+      Cluster: !Ref ECSCluster
+      DesiredCount: 2
+      HealthCheckGracePeriodSeconds: 120
+      LaunchType: FARGATE
+      LoadBalancers: 
+        - TargetGroupArn:
+            Ref: TargetGroupUser
+          ContainerPort: 8089
+          ContainerName: ss-utopia-users
+        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
+      NetworkConfiguration: 
+        AwsvpcConfiguration: 
+          AssignPublicIp: ENABLED
+          SecurityGroups: 
+            - sg-0ec3141c0c23d98e8
+          Subnets: 
+            -  subnet-00c9e1c0b4da033f6
+            -  subnet-0028f7b0fdde23b65
+      ServiceName: ServiceUser
+      TaskDefinition: ss-utopia-user:1
+  
+
+  ListenerAuth:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: 
+      - TargetGroupAuth
+      - LoadBlancer
+    Properties: 
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupAuth
+      LoadBalancerArn: !Ref  LoadBlancer
+      Port: 8443
+      Protocol: HTTPS
+      Certificates:
+        - arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+  TargetGroupAuth:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Port: 8443
+      Protocol: HTTP
+      VpcId: vpc-0e0392f1c54c7bdb2
+      HealthCheckIntervalSeconds: 30
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Name: Auth-dev
+      ProtocolVersion: HTTP1
+      TargetType: ip
+  ServiceAuth:
+    Type: AWS::ECS::Service
+    DependsOn: 
+      - ListenerAuth
+      - LoadBlancer
+      - ECSCluster
+    Properties: 
+      Cluster: !Ref ECSCluster
+      DesiredCount: 2
+      HealthCheckGracePeriodSeconds: 120
+      LaunchType: FARGATE
+      LoadBalancers: 
+        - TargetGroupArn:
+            Ref: TargetGroupAuth
+          ContainerPort: 8443
+          ContainerName: ss-utopia-auth
+        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
+      NetworkConfiguration: 
+        AwsvpcConfiguration: 
+          AssignPublicIp: ENABLED
+          SecurityGroups: 
+            - sg-0ec3141c0c23d98e8
+          Subnets: 
+            -  subnet-00c9e1c0b4da033f6
+            -  subnet-0028f7b0fdde23b65
+      ServiceName: ServiceAuth
+      TaskDefinition: ss-utopia-auth:4
+
+
+  LoadBlancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      IpAddressType: ipv4
+      Name: ecsLB
+      Scheme: internet-facing
+      SecurityGroups:
+        -  sg-0ec3141c0c23d98e8
+      Subnets: 
+        -  subnet-00c9e1c0b4da033f6
+        -  subnet-0028f7b0fdde23b65
+  
+  routeRecord:
+    Type: AWS::Route53::RecordSet
+    DependsOn: 
+      - LoadBlancer
+    Properties: 
+      AliasTarget: 
+        DNSName: !GetAtt LoadBlancer.DNSName
+        HostedZoneId: !GetAtt LoadBlancer.CanonicalHostedZoneID
+      HostedZoneId: Z05979981EHQ1LXTHAH2G
+      Name: api.utopia-financial.com
+      Type: A
+
+
+
+
+
+
+ 

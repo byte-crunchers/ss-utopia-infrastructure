@@ -1,0 +1,23 @@
+Resources:
+  LoadBlancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      IpAddressType: ipv4
+      Name: ecsLB
+      Scheme: internet-facing
+      SecurityGroups:
+        -  sg-0ec3141c0c23d98e8
+      Subnets: 
+        -  subnet-00c9e1c0b4da033f6
+        -  subnet-0028f7b0fdde23b65
+  
+  routeRecord:
+    Type: AWS::Route53::RecordSet
+    Properties: 
+      AliasTarget: 
+        DNSName: !GetAtt LoadBlancer.DNSName
+        HostedZoneId: !GetAtt LoadBlancer.CanonicalHostedZoneID
+      HostedZoneId: Z05979981EHQ1LXTHAH2G
+      Name: api.utopia-financial.com
+      Type: A
+

@@ -1,0 +1,51 @@
+ListenerAuth:
+  Type: AWS::ElasticLoadBalancingV2::Listener
+  DependsOn: 
+    - TargetGroupAuth
+  Properties: 
+    DefaultActions: 
+      - Type: forward
+        TargetGroupArn: !Ref TargetGroupAuth
+    LoadBalancerArn: arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
+    Port: 8443
+    Protocol: HTTP
+TargetGroupAuth:
+  Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+  Properties:
+    Port: 8443
+    Protocol: HTTP
+    VpcId: vpc-0e0392f1c54c7bdb2
+    HealthCheckIntervalSeconds: 30
+    HealthCheckPath: /
+    HealthCheckProtocol: HTTP
+    HealthCheckTimeoutSeconds: 10
+    HealthyThresholdCount: 2
+    UnhealthyThresholdCount: 5
+    Name: Auth-dev
+    ProtocolVersion: HTTP1
+    TargetType: ip
+ServiceAuth:
+  Type: AWS::ECS::Service
+  DependsOn: 
+    - ListenerAuth
+  Properties: 
+    Cluster: arn:aws:ecs:us-east-1:422288715120:cluster/ss-microservice-cluster
+    DesiredCount: 2
+    HealthCheckGracePeriodSeconds: 120
+    LaunchType: FARGATE
+    LoadBalancers: 
+      - TargetGroupArn:
+          Ref: TargetGroupAuth
+        ContainerPort: 8443
+        ContainerName: ss-utopia-auth
+      #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
+    NetworkConfiguration: 
+      AwsvpcConfiguration: 
+        AssignPublicIp: ENABLED
+        SecurityGroups: 
+          - sg-0ec3141c0c23d98e8
+        Subnets: 
+          -  subnet-00c9e1c0b4da033f6
+          -  subnet-0028f7b0fdde23b65
+    ServiceName: ServiceAuth
+    TaskDefinition: ss-utopia-auth:3

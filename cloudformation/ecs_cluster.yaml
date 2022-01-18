@@ -1,0 +1,12 @@
+
+Resources:
+  ECSCluster:  
+    Type: AWS::ECS::Cluster
+    Properties: 
+      CapacityProviders: 
+        - FARGATE
+      ClusterName: ss-microservice-cluster
+      DefaultCapacityProviderStrategy: 
+        - CapacityProvider: FARGATE
+          Weight: 1
+      
