@@ -9,9 +9,6 @@ Resources:
       DefaultCapacityProviderStrategy: 
         - CapacityProvider: FARGATE
           Weight: 1
-      
-
-
 
   ListenerAccount:
     Type: AWS::ElasticLoadBalancingV2::Listener

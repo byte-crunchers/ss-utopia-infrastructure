@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-gateway
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-1-2017-01 
+    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+    
+
+spec:
+  rules:
+  - host: api.utopia-financial.com
+  - http:
+      paths:
+      - path: /api/v0.1/CardTypes
+        pathType: Prefix
+        backend:
+          service:
+            name: ss-utopia-card
+            port:
+              number: 443
+      - path: /api/v0.1/accountTypes
+        pathType: Prefix
+        backend:
+          service:
+            name: ss-utopia-account
+            port:
+              number: 443
+      - path: /api/v0.1/LoanTypes
+        pathType: Prefix
+        backend:
+          service:
+            name: ss-utopia-loan
+            port:
+              number: 443
+      - path: /login
+        pathType: Prefix
+        backend:
+          service:
+            name: ss-utopia-auth
+            port:
+              number: 443
+
+
+
+
+

@@ -1,0 +1,5 @@
+backend.hcl
+input.tfvars
+.terraform.lock.hcl
+commands.txt
+.terraform/

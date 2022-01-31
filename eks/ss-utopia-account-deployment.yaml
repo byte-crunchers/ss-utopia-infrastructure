@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: ss-utopia-account
+  name: ss-utopia-account
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: ss-utopia-account
+  template:
+    metadata:
+      labels:
+        network/mynetwork: "true"
+        service: ss-utopia-account
+    spec:
+      containers:
+      - image: 422288715120.dkr.ecr.us-east-1.amazonaws.com/ss-utopia-account:latest 
+        imagePullPolicy: "Always"
+        name: ss-utopia-account
+        ports:
+        - containerPort: 8088
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8088
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8088
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ss-utopia-account
+  name: ss-utopia-account
+spec:
+  ports:
+  - name: "8088"
+    port: 443
+    targetPort: 8088
+  selector:
+    service: ss-utopia-account
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: Service
+metadata:  
+  name: my-nodeport-service
+spec:
+  selector:
+    io.kompose.service: ss-utopia-account
+  type: NodePort
+  ports:  
+  - name: http
+    port: 80
+    targetPort: 8088
+    nodePort: 30036
+    protocol: TCP
+
+--- 
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: account-as
+  #namespace: default
+spec:
+  maxReplicas: 3
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ss-utopia-account
+  targetCPUUtilizationPercentage: 75

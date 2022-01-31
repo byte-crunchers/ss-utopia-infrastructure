@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: ss-utopia-loan
+  name: ss-utopia-loan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: ss-utopia-loan
+  template:
+    metadata:
+      labels:
+        service: ss-utopia-loan
+    spec:
+      containers:        
+      - image: 422288715120.dkr.ecr.us-east-1.amazonaws.com/ss-utopia-loan:latest
+        imagePullPolicy: "Always"
+        name: ss-utopia-loan
+        ports:
+        - containerPort: 8084
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Always
+      serviceAccountName: ""
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ss-utopia-loan
+  name: ss-utopia-loan
+spec:
+  ports:
+  - name: "8084"
+    port: 443
+    targetPort: 8084
+  selector:
+    service: ss-utopia-loan
+status:
+  loadBalancer: {}

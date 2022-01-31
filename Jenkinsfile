@@ -15,7 +15,7 @@ pipeline {
     
     stage('checkout') {
       steps {
-        git branch: env.git_branch, credentialsId: 'git_login', url: env.git_repo
+        git branch: "cloudformation", credentialsId: 'git_login', url: "https://github.com/byte-crunchers/ss-utopia-infrastructure.git"
       }
     }
     

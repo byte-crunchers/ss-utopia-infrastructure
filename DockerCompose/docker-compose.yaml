@@ -1,0 +1,27 @@
+version: "3"
+services:
+
+  ss-utopia-auth:
+    image: 422288715120.dkr.ecr.us-east-1.amazonaws.com/ss-utopia-auth:latest
+    ports:
+      - 8443:8443
+    # networks:
+    #   - mynetwork
+  ss-utopia-loan:
+    image: 422288715120.dkr.ecr.us-east-1.amazonaws.com/ss-utopia-loan:latest
+    ports:
+      - 8084:8084
+    # networks:
+    #   - mynetwork
+
+  ss-utopia-account:
+    image: 422288715120.dkr.ecr.us-east-1.amazonaws.com/ss-utopia-account:latest
+    ports:
+      - 8088:8088
+    # networks:
+    #   - mynetwork
+  
+  ss-utopia-user:
+    image: 422288715120.dkr.ecr.us-east-1.amazonaws.com/ss-utopia-users:latest
+    ports:
+      - 8090:8090
