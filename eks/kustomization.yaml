@@ -1,7 +1,7 @@
 resources:
   - ss-utopia-account-deployment.yaml
   - ss-utopia-auth-deployment.yaml
-  - ss-utopia-card-deployment.yaml
+  - ss-utopia-user-deployment.yaml
   - ss-utopia-loan-deployment.yaml
   - microservice-ingress.yaml
   

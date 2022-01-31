@@ -17,11 +17,11 @@ spec:
   - host: api.utopia-financial.com
   - http:
       paths:
-      - path: /api/v0.1/CardTypes
+      - path: /api/v0.1/User
         pathType: Prefix
         backend:
           service:
-            name: ss-utopia-card
+            name: ss-utopia-user
             port:
               number: 443
       - path: /api/v0.1/accountTypes
