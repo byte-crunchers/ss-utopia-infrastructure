@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ss-utopia-auth
+  name: ss-utopia-auth
+spec:
+  ports:
+  - name: "53440"
+    port: 80
+    targetPort: 53440
+  selector:
+    io.kompose.service: ss-utopia-auth
+status:
+  loadBalancer: {}

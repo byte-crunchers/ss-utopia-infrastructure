@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ss-utopia-loan
+  name: ss-utopia-loan
+spec:
+  ports:
+  - name: "8084"
+    port: 80
+    targetPort: 8084
+  selector:
+    io.kompose.service: ss-utopia-loan
+status:
+  loadBalancer: {}

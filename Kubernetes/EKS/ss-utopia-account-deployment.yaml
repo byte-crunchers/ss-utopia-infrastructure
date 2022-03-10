@@ -16,7 +16,7 @@ spec:
         service: ss-utopia-account
     spec:
       containers:
-      - image: 422288715120.dkr.ecr.us-east-1.amazonaws.com/ss-utopia-account:latest 
+      - image: ${account_id}.dkr.ecr.${region}.amazonaws.com/ss-utopia-account:latest 
         imagePullPolicy: "Always"
         name: ss-utopia-account
         ports:
@@ -61,21 +61,6 @@ spec:
     service: ss-utopia-account
 status:
   loadBalancer: {}
----
-apiVersion: v1
-kind: Service
-metadata:  
-  name: my-nodeport-service
-spec:
-  selector:
-    io.kompose.service: ss-utopia-account
-  type: NodePort
-  ports:  
-  - name: http
-    port: 80
-    targetPort: 8088
-    nodePort: 30036
-    protocol: TCP
 
 --- 
 apiVersion: autoscaling/v1

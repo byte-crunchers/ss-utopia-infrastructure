@@ -28,7 +28,7 @@ Resources:
       Name: acct-dev
       ProtocolVersion: HTTP1
       TargetType: ip
-  ServiceAcct:
+  ss-account-service:
     Type: AWS::ECS::Service
     DependsOn: 
       - ListenerAccount

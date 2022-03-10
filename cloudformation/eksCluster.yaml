@@ -1,0 +1,56 @@
+Parameters:
+  EKSClusterName:
+    Type: String
+    Default: ss-microservice-cluster-eks
+    Description: Name of the ECS Cluster
+  Certificate:
+    Description: AWS Defined certificate arn
+    Type: String
+    Default: arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+  VpcId:
+    Description: ID of the VPC for the cluster
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0e0392f1c54c7bdb2
+  SecurityGroupId:
+    Description: Id of Security Group Id for the microservices(services)
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-084f7c02034e43647
+  SubnetList:
+    Description: list of subnets for the microservices to live
+    Type: String
+    Default: subnet-03a8fad58b369f014,subnet-06f80c11bb1c4fb16
+
+
+Resources:
+
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: 
+        Ref: EKSClusterName
+      Version: "1.20"
+      RoleArn: "arn:aws:iam::422288715120:role/eks"
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - Ref: SecurityGroupId
+        SubnetIds:
+          !Split [",", !Ref SubnetList]
+      Tags:
+        - Key: "env"
+          Value: "dev"
+  EKSNodegroup:
+    Type: 'AWS::EKS::Nodegroup'
+    DependsOn: 
+      - EKSCluster
+    Properties:
+      ClusterName: 
+        Ref: EKSClusterName
+      ScalingConfig:
+        MinSize: 2
+        DesiredSize: 2
+        MaxSize: 4
+      InstanceTypes: 
+        - t3.medium
+      Subnets:
+        !Split [",", !Ref SubnetList]
+      NodeRole:  'arn:aws:iam::422288715120:role/AWSeksNODE'

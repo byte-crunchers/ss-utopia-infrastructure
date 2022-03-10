@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ss-utopia-auth
+  name: ss-utopia-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: ss-utopia-auth
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.network/mynetwork: "true"
+        io.kompose.service: ss-utopia-auth
+    spec:
+      containers:
+      - env:
+        - name: eureka.client.serviceUrl.defaultZone
+          value: http://ss-utopia-eureka:8761/eureka/
+        image: 422288715120.dkr.ecr.us-east-1.amazonaws.com/ss-utopia-auth:latest
+        imagePullPolicy: "Always"
+        name: ss-utopia-auth
+        ports:
+        - containerPort: 53440
+        resources: {}
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes: null
+status: {}

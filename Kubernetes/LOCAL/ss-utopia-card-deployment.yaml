@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: ss-utopia-card
+  name: ss-utopia-card
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: ss-utopia-card
+  template:
+    metadata:
+      labels:
+        service: ss-utopia-card
+    spec:
+      containers:
+      - image: ${account_id}.dkr.ecr.${region}.amazonaws.com/ss-utopia-card:latest
+        imagePullPolicy: "Always"
+        name: ss-utopia-card
+        ports:
+        - containerPort: 8083
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Always
+      serviceAccountName: ""
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ss-utopia-card
+  name: ss-utopia-card
+spec:
+  ports:
+  - name: "8083"
+    port: 80
+    targetPort: 8083
+  selector:
+    service: ss-utopia-card
+status:
+  loadBalancer: {}

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: ss-utopia-card
+  name: ss-utopia-card
+spec:
+  ports:
+  - name: "8083"
+    port: 80
+    targetPort: 8083
+  selector:
+    io.kompose.service: ss-utopia-card
+status:
+  loadBalancer: {}

@@ -1,3 +1,50 @@
+Parameters:
+  ECSClusterName:
+    Type: String
+    Default: ss-microservice-cluster
+    Description: Name of the ECS Cluster
+  Certificate:
+    Description: AWS Defined certificate arn
+    Type: String
+    Default: arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+  VpcId:
+    Description: ID of the VPC for the cluster
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0539fcbee603aa06f
+  SecurityGroupId:
+    Description: Id of Security Group Id for the microservices(services)
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-084f7c02034e43647
+  PublicSubnetList:
+    Description: list of subnets for the loadbalancer to live
+    Type: String
+    Default: subnet-06ccffc4220634064,subnet-0be0fcb5a5e935938
+  PrivateSubnetList:
+    Description: list of subnets for the microservices to live
+    Type: String
+    Default: subnet-03a8fad58b369f014,subnet-06f80c11bb1c4fb16  
+  HostedZoneId:
+    Description: id of the hosted zone for route53 record
+    Type: AWS::Route53::HostedZone::Id
+    Default: Z05979981EHQ1LXTHAH2G
+  AuthTaskDef:
+    Description: The task definistion for the auth service to use
+    Type: String
+    Default: ss-utopia-auth:4
+  LoanTaskDef:
+    Description: The task definistion for the loan service to use
+    Type: String
+    Default: ss-utopia-loan:1
+  AccountTaskDef:
+    Description: The task definistion for the account service to use
+    Type: String
+    Default: ss-utopia-account:5
+  UserTaskDef:
+    Description: The task definistion for the user service to use
+    Type: String
+    Default: ss-utopia-user:1
+
+
 Resources:
 
   ECSCluster:  
@@ -5,7 +52,8 @@ Resources:
     Properties: 
       CapacityProviders: 
         - FARGATE
-      ClusterName: ss-microservice-cluster
+      ClusterName: 
+        Ref: ECSClusterName
       DefaultCapacityProviderStrategy: 
         - CapacityProvider: FARGATE
           Weight: 1
@@ -23,13 +71,14 @@ Resources:
       Port: 8088
       Protocol: HTTPS
       Certificates:
-        - arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+        - Ref: Certificate
   TargetGroupAcct:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
       Port: 8088
       Protocol: HTTPS
-      VpcId: vpc-0e0392f1c54c7bdb2
+      VpcId: 
+        Ref: VpcId
       HealthCheckIntervalSeconds: 30
       HealthCheckPath: /
       HealthCheckProtocol: HTTPS
@@ -55,17 +104,16 @@ Resources:
             Ref: TargetGroupAcct
           ContainerPort: 8088
           ContainerName: ss-utopia-account
-        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
       NetworkConfiguration: 
         AwsvpcConfiguration: 
           AssignPublicIp: ENABLED
           SecurityGroups: 
-            - sg-0ec3141c0c23d98e8
+            - Ref: SecurityGroupId
           Subnets: 
-            -  subnet-00c9e1c0b4da033f6
-            -  subnet-0028f7b0fdde23b65
+            !Split [",", !Ref PrivateSubnetList]
       ServiceName: ServiceAcct
-      TaskDefinition: ss-utopia-account:5
+      TaskDefinition: 
+        Ref: AccountTaskDef
 
 
   ListenerLoan:
@@ -81,13 +129,14 @@ Resources:
       Port: 8084
       Protocol: HTTPS
       Certificates:
-        - arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+        - Ref: Certificate
   TargetGroupLoan:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
       Port: 8084
       Protocol: HTTPS
-      VpcId: vpc-0e0392f1c54c7bdb2
+      VpcId: 
+        Ref: VpcId
       HealthCheckIntervalSeconds: 30
       HealthCheckPath: /
       HealthCheckProtocol: HTTPS
@@ -113,17 +162,16 @@ Resources:
             Ref: TargetGroupLoan
           ContainerPort: 8084
           ContainerName: ss-utopia-loan
-        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
       NetworkConfiguration: 
         AwsvpcConfiguration: 
           AssignPublicIp: ENABLED
           SecurityGroups: 
-            - sg-0ec3141c0c23d98e8
+            - Ref: SecurityGroupId
           Subnets: 
-            -  subnet-00c9e1c0b4da033f6
-            -  subnet-0028f7b0fdde23b65
+            !Split [",", !Ref PrivateSubnetList]
       ServiceName: ServiceLoan
-      TaskDefinition: ss-utopia-loan:1
+      TaskDefinition: 
+        Ref: LoanTaskDef
 
 
 
@@ -140,13 +188,14 @@ Resources:
       Port: 8089
       Protocol: HTTPS
       Certificates:
-        - arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+        - Ref: Certificate
   TargetGroupUser:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
       Port: 8089
       Protocol: HTTPS
-      VpcId: vpc-0e0392f1c54c7bdb2
+      VpcId: 
+        Ref: VpcId
       HealthCheckIntervalSeconds: 30
       HealthCheckPath: /
       HealthCheckProtocol: HTTPS
@@ -172,17 +221,16 @@ Resources:
             Ref: TargetGroupUser
           ContainerPort: 8089
           ContainerName: ss-utopia-users
-        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
       NetworkConfiguration: 
         AwsvpcConfiguration: 
           AssignPublicIp: ENABLED
           SecurityGroups: 
-            - sg-0ec3141c0c23d98e8
+            - Ref: SecurityGroupId
           Subnets: 
-            -  subnet-00c9e1c0b4da033f6
-            -  subnet-0028f7b0fdde23b65
+            !Split [",", !Ref PrivateSubnetList]
       ServiceName: ServiceUser
-      TaskDefinition: ss-utopia-user:1
+      TaskDefinition: 
+        Ref: UserTaskDef
   
 
   ListenerAuth:
@@ -198,13 +246,14 @@ Resources:
       Port: 8443
       Protocol: HTTPS
       Certificates:
-        - arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+        - Ref: Certificate
   TargetGroupAuth:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
       Port: 8443
       Protocol: HTTP
-      VpcId: vpc-0e0392f1c54c7bdb2
+      VpcId: 
+        Ref: VpcId
       HealthCheckIntervalSeconds: 30
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
@@ -230,17 +279,16 @@ Resources:
             Ref: TargetGroupAuth
           ContainerPort: 8443
           ContainerName: ss-utopia-auth
-        #- arn:aws:elasticloadbalancing:us-east-1:422288715120:loadbalancer/app/ecsLB/4eaa10b0ee6c6bc1
       NetworkConfiguration: 
         AwsvpcConfiguration: 
           AssignPublicIp: ENABLED
           SecurityGroups: 
-            - sg-0ec3141c0c23d98e8
+            - Ref: SecurityGroupId
           Subnets: 
-            -  subnet-00c9e1c0b4da033f6
-            -  subnet-0028f7b0fdde23b65
+            !Split [",", !Ref PrivateSubnetList]
       ServiceName: ServiceAuth
-      TaskDefinition: ss-utopia-auth:4
+      TaskDefinition: 
+        Ref: AuthTaskDef
 
 
   LoadBlancer:
@@ -249,11 +297,10 @@ Resources:
       IpAddressType: ipv4
       Name: ecsLB
       Scheme: internet-facing
-      SecurityGroups:
-        -  sg-0ec3141c0c23d98e8
+      SecurityGroups: 
+            - Ref: SecurityGroupId
       Subnets: 
-        -  subnet-00c9e1c0b4da033f6
-        -  subnet-0028f7b0fdde23b65
+            !Split [",", !Ref PublicSubnetList]
   
   routeRecord:
     Type: AWS::Route53::RecordSet
@@ -263,13 +310,7 @@ Resources:
       AliasTarget: 
         DNSName: !GetAtt LoadBlancer.DNSName
         HostedZoneId: !GetAtt LoadBlancer.CanonicalHostedZoneID
-      HostedZoneId: Z05979981EHQ1LXTHAH2G
+      HostedZoneId: 
+        Ref: HostedZoneId
       Name: api.utopia-financial.com
       Type: A
-
-
-
-
-
-
- 

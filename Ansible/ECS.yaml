@@ -1,0 +1,309 @@
+- name: Setup ECS cluster 
+  hosts: localhost
+  vars:
+    ecs_cluster_name: 'ss-microservice-cluster'
+  tasks: 
+    - name: Cluster Creation
+      community.aws.ecs_cluster:
+        name: "{{ ecs_cluster_name }}"
+        state: present  
+      register: ecs_cluster_output
+    # - debug:
+    #     var: ecs_cluster_output
+
+- name: target group  for account microservice
+  hosts: localhost
+  vars:
+    vpc_id: 	vpc-0539fcbee603aa06f
+    account_port: 8088
+  tasks:     
+    - name: create target group account
+      community.aws.elb_target_group:
+        name: account-target-group
+        vpc_id: "{{ vpc_id }}"
+        port: "{{ account_port }}"
+        protocol: HTTPS
+        health_check_protocol: https
+        health_check_path: /
+        successful_response_codes: 200
+        health_check_interval: 30
+        health_check_timeout: 10
+        healthy_threshold_count: 2
+        unhealthy_threshold_count: 5
+        target_type: ip
+        state: present
+      register: account_target_group
+    # - debug: 
+    #     var: account_target_group
+
+- name: target group for loan microservice
+  hosts: localhost
+  vars:
+    vpc_id: 	vpc-0539fcbee603aa06f
+    loan_port: 8084
+  tasks:     
+    - name: create target group loan
+      community.aws.elb_target_group:
+        name: loan-target-group
+        vpc_id: "{{ vpc_id }}"
+        port: "{{ loan_port }}"
+        protocol: HTTPS
+        health_check_protocol: https
+        health_check_path: /
+        successful_response_codes: 200
+        health_check_interval: 30
+        health_check_timeout: 10
+        healthy_threshold_count: 2
+        unhealthy_threshold_count: 5
+        target_type: ip
+        state: present
+      register: loan_target_group
+    # - debug: 
+    #     var: loan_target_group
+    
+- name: target group for user microservice
+  hosts: localhost
+  vars:
+    vpc_id: 	vpc-0539fcbee603aa06f
+    user_port: 8089
+  tasks:     
+    - name: create target group user
+      community.aws.elb_target_group:
+        name: user-target-group
+        vpc_id: "{{ vpc_id }}"
+        port: "{{ user_port }}"
+        protocol: HTTPS
+        health_check_protocol: https
+        health_check_path: /
+        successful_response_codes: 200
+        health_check_interval: 30
+        health_check_timeout: 10
+        healthy_threshold_count: 2
+        unhealthy_threshold_count: 5
+        target_type: ip
+        state: present
+      register: user_target_group
+    # - debug: 
+    #     var: user_target_group
+
+- name: target group for auth microservice
+  hosts: localhost
+  vars:
+    vpc_id: 	vpc-0539fcbee603aa06f
+    auth_port: 8443
+  tasks:     
+    - name: create target group auth
+      community.aws.elb_target_group:
+        name: auth-target-group
+        vpc_id: "{{ vpc_id }}"
+        port: "{{ auth_port }}"
+        protocol: HTTP
+        health_check_protocol: http
+        health_check_path: /
+        successful_response_codes: 200
+        health_check_interval: 30
+        health_check_timeout: 10
+        healthy_threshold_count: 2
+        unhealthy_threshold_count: 5
+        target_type: ip
+        state: present
+      register: auth_target_group
+    - debug: 
+        var: auth_target_group
+
+- name: create loadbalancer and Configure Route 53
+  hosts: localhost
+  vars:
+    security_groups_alb: 
+      - sg-084f7c02034e43647
+    subnets_alb:
+      - subnet-06ccffc4220634064
+      - subnet-0be0fcb5a5e935938
+    certificate: arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+  tasks:
+    - name: LB Creation
+      community.aws.elb_application_lb:
+        name: ecs-alb
+        security_groups:
+          "{{ security_groups_alb }}"
+        subnets:
+          "{{ subnets_alb }}"
+        scheme: internet-facing
+        ip_address_type: ipv4
+        listeners:
+        - Protocol: HTTPS 
+          Port: 443 
+          SslPolicy: ELBSecurityPolicy-2015-05
+          Certificates: 
+            - CertificateArn: "{{ certificate }}"
+          Rules:
+          - Conditions:
+              - Field: path-pattern
+                Values:
+                  - '/*'
+            Priority: '1'
+            Actions:
+              - TargetGroupName: "{{ account_target_group.target_group_name }}"
+                Type: forward
+          DefaultActions:
+            - Type: forward # Required.
+              TargetGroupName: "{{ account_target_group.target_group_name }}"
+        - Protocol: HTTPS 
+          Port: 8089 
+          SslPolicy: ELBSecurityPolicy-2015-05
+          Certificates: 
+            - CertificateArn: "{{ certificate }}"
+          Rules:
+          - Conditions:
+              - Field: path-pattern
+                Values:
+                  - '/*'
+            Priority: '1'
+            Actions:
+              - TargetGroupName: "{{ user_target_group.target_group_name }}"
+                Type: forward
+          DefaultActions:
+            - Type: forward # Required.
+              TargetGroupName: "{{ account_target_group.target_group_name }}"
+        - Protocol: HTTPS 
+          Port: 8443 
+          SslPolicy: ELBSecurityPolicy-2015-05
+          Certificates: 
+            - CertificateArn: "{{ certificate }}"
+          Rules:
+          - Conditions:
+              - Field: path-pattern
+                Values:
+                  - '/*'
+            Priority: '1'
+            Actions:
+              - TargetGroupName: "{{ auth_target_group.target_group_name }}"
+                Type: forward
+          DefaultActions:
+            - Type: forward # Required.
+              TargetGroupName: "{{ account_target_group.target_group_name }}"
+        - Protocol: HTTPS 
+          Port: 8084 
+          SslPolicy: ELBSecurityPolicy-2015-05
+          Certificates: 
+            - CertificateArn: "{{ certificate }}"
+          Rules:
+          - Conditions:
+              - Field: path-pattern
+                Values:
+                  - '/*'
+            Priority: '1'
+            Actions:
+              - TargetGroupName: "{{ loan_target_group.target_group_name }}"
+                Type: forward   
+          DefaultActions:
+            - Type: forward # Required.
+              TargetGroupName: "{{ account_target_group.target_group_name }}"
+        state: present
+      register: alb_output
+
+    - name: add route 53 route53
+      community.aws.route53:
+        state: present
+        zone: utopia-financial.com
+        record: api.utopia-financial.com
+        type: A
+        value: "{{ alb_output.dns_name }}"
+        alias: True
+        alias_hosted_zone_id: "{{ alb_output.canonical_hosted_zone_id }}"
+        overwrite: yes
+
+- name:  service for each microservice
+  hosts: localhost
+  vars:
+    vpc_id: 	vpc-0539fcbee603aa06f
+    account_port: 8088
+    loan_port: 8084
+    user_port: 8089
+    auth_port: 8443
+    account_task_def: ss-utopia-account:5
+    user_task_def: ss-utopia-user:1
+    loan_task_def: ss-utopia-loan:1
+    auth_task_def: ss-utopia-auth:4
+    security_groups_micro: 
+      - sg-084f7c02034e43647
+    subnets_micro:
+      - subnet-03a8fad58b369f014
+      - subnet-06f80c11bb1c4fb16
+  tasks:
+    - name: create account service
+      community.aws.ecs_service:
+        name: account-service
+        cluster: "{{ ecs_cluster_output.cluster.clusterName }}"
+        task_definition: "{{ account_task_def }}"
+        desired_count: 2
+        launch_type: FARGATE
+        load_balancers:
+        - targetGroupArn: "{{ account_target_group.target_group_arn }}"
+          containerPort: 8088
+          containerName: ss-utopia-account
+        network_configuration:
+          subnets: "{{ subnets_micro }}"
+          security_groups: "{{ security_groups_micro }}"
+          assign_public_ip: no
+        state: present
+      register: account_service_output
+    # - debug: 
+    #     var: account_service_output
+
+    - name: create user service
+      community.aws.ecs_service:
+        name: user-service
+        cluster: "{{ ecs_cluster_output.cluster.clusterName }}"
+        task_definition: "{{ user_task_def }}"
+        desired_count: 2
+        launch_type: FARGATE
+        load_balancers:
+        - targetGroupArn: "{{ user_target_group.target_group_arn }}"
+          containerPort: 8089
+          containerName: ss-utopia-users
+        network_configuration:
+          subnets: "{{ subnets_micro }}"
+          security_groups: "{{ security_groups_micro }}"
+          assign_public_ip: no
+        state: present
+
+    - name: create loan service
+      community.aws.ecs_service:
+        name: loan-service
+        cluster: "{{ ecs_cluster_output.cluster.clusterName }}"
+        task_definition: "{{ loan_task_def }}"
+        desired_count: 2
+        launch_type: FARGATE
+        load_balancers:
+        - targetGroupArn: "{{ loan_target_group.target_group_arn }}"
+          containerPort: 8084
+          containerName: ss-utopia-loan
+        network_configuration:
+          subnets: "{{ subnets_micro }}"
+          security_groups: "{{ security_groups_micro }}"
+          assign_public_ip: no
+        state: present
+
+    - name: create auth service
+      community.aws.ecs_service:
+        name: auth-service
+        cluster: "{{ ecs_cluster_output.cluster.clusterName }}"
+        task_definition: "{{ auth_task_def }}"
+        desired_count: 2
+        launch_type: FARGATE
+        load_balancers:
+        - targetGroupArn: "{{ auth_target_group.target_group_arn }}"
+          containerPort: 8443
+          containerName: ss-utopia-auth
+        network_configuration:
+          subnets: "{{ subnets_micro }}"
+          security_groups: "{{ security_groups_micro }}"
+          assign_public_ip: no
+        state: present
+
+
+
+
+
+

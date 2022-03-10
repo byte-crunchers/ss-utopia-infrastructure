@@ -1,0 +1,40 @@
+
+
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: ss-eks-cluster
+  region: us-east-1
+iam: 
+  withOIDC: true
+  serviceAccounts:
+  - metadata:
+      name: aws-load-balancer-controller
+      namespace: kube-system
+    wellKnownPolicies: 
+      awsLoadBalancerController: true
+      certManager: true
+
+vpc:
+  id: vpc-0539fcbee603aa06f
+  securityGroup: sg-084f7c02034e43647
+  subnets:
+    private: 
+      us-east-1b:
+        id: subnet-03a8fad58b369f014
+      us-east-1a:
+        id: subnet-06f80c11bb1c4fb16
+
+
+# nodeGroups:
+#   - name: ng-1
+#     instanceType: t3.medium
+#     desiredCapacity: 2
+#     subnets: [subnet-03a8fad58b369f014,subnet-06f80c11bb1c4fb16]
+
+# vpc subnets kubectl apply -f 
+#param change destroy to apply
+
+
+

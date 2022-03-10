@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: ss-utopia-user
+  name: ss-utopia-user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: ss-utopia-user
+  template:
+    metadata:
+      labels:
+        service: ss-utopia-user
+    spec:
+      containers:
+      - image: ${account_id}.dkr.ecr.${region}.amazonaws.com/ss-utopia-users:latest
+        imagePullPolicy: "Always"
+        name: ss-utopia-user
+        ports:
+        - containerPort: 8089
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Always
+      serviceAccountName: ""
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: ss-utopia-user
+  name: ss-utopia-user
+spec:
+  ports:
+  - name: "8083"
+    port: 80
+    targetPort: 8089
+  selector:
+    service: ss-utopia-user
+status:
+  loadBalancer: {}

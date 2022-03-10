@@ -8,8 +8,9 @@ metadata:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-1-2017-01 
     alb.ingress.kubernetes.io/backend-protocol: HTTPS
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 8443},{"HTTPS": 8088},{"HTTPS": 8084},{"HTTPS": 8089}]'
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:422288715120:certificate/a3761ff8-2b71-4211-baf3-794ab4c941d9
+    alb.ingress.kubernetes.io/subnets: subnet-06ccffc4220634064,subnet-0be0fcb5a5e935938
     
 
 spec:
@@ -17,34 +18,34 @@ spec:
   - host: api.utopia-financial.com
   - http:
       paths:
-      - path: /api/v0.1/User
+      - path: /api/v0.1/users
         pathType: Prefix
         backend:
           service:
             name: ss-utopia-user
             port:
-              number: 443
+              number: 8089
       - path: /api/v0.1/accountTypes
         pathType: Prefix
         backend:
           service:
             name: ss-utopia-account
             port:
-              number: 443
+              number: 8088
       - path: /api/v0.1/LoanTypes
         pathType: Prefix
         backend:
           service:
             name: ss-utopia-loan
             port:
-              number: 443
+              number: 8084
       - path: /login
         pathType: Prefix
         backend:
           service:
             name: ss-utopia-auth
             port:
-              number: 443
+              number: 8443
 
 
 
