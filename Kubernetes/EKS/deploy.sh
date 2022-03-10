@@ -1,4 +1,4 @@
-
+#!/bin/bash
 # eksctl utils associate-iam-oidc-provider --cluster ss-eks-cluster --approve
 aws iam create-policy \
     --policy-name AWSLoadBalancerControllerIAMPolicy \
